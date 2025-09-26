@@ -96,9 +96,13 @@ def main(port: int, transport: str, api_key: str, baseurl: str) -> int:
         props = {}
         for arg in tool["args"]:
             props[arg["name"]] = {
-                "type": "string",
+                "type": arg.get("type", "string"),
                 "description": arg["description"],
+                "required": arg.get("required", False),
             }
+            # 只有配置了default值，则添加默认值
+            if "default" in arg:
+                props[arg["name"]]["default"] = arg["default"]
         tools.append(types.Tool(
                 name=tool["name"],
                 description=tool["description"],
