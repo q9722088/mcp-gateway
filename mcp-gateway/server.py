@@ -96,9 +96,13 @@ def main(port: int, transport: str, api_key: str, baseurl: str) -> int:
         props = {}
         for arg in tool["args"]:
             props[arg["name"]] = {
-                "type": "string",
+                "type": arg.get("type", "string"),
                 "description": arg["description"],
+                "required": arg.get("required", False),
             }
+            # 只有配置了default值，则添加默认值
+            if "default" in arg:
+                props[arg["name"]]["default"] = arg["default"]
         tools.append(types.Tool(
                 name=tool["name"],
                 description=tool["description"],
@@ -131,9 +135,9 @@ def main(port: int, transport: str, api_key: str, baseurl: str) -> int:
         elif "url" in request_template:
             url = request_template["url"]
             for k, v in arguments.items():
-                url = url.replace("{{.args." + k + "}}", v)
+                url = url.replace("{{.args." + k + "}}", str(v))
             for k, v in config["server"]["config"].items():
-                url = url.replace("{{.config." + k + "}}", v)
+                url = url.replace("{{.config." + k + "}}", str(v))
             # return [types.TextContent(type="text", text=url)]
 
             return await forward_tool_call(request_template["method"], url)
