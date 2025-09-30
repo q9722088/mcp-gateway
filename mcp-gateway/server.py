@@ -94,11 +94,14 @@ def main(port: int, transport: str, api_key: str, baseurl: str) -> int:
     tools_map = {}
     for tool in config["tools"]:
         props = {}
+        required= []
         for arg in tool["args"]:
+            required_value = arg.get("required", "")
+            if str(required_value).upper() == "TRUE":
+                required.append(arg["name"])
             props[arg["name"]] = {
                 "type": arg.get("type", "string"),
                 "description": arg["description"],
-                "required": arg.get("required", False),
             }
             # 只有配置了default值，则添加默认值
             if "default" in arg:
@@ -108,7 +111,7 @@ def main(port: int, transport: str, api_key: str, baseurl: str) -> int:
                 description=tool["description"],
                 inputSchema={
                     "type": "object",
-                    #"required": ["url"],
+                    "required": required,
                     "properties": props,
                 },
             ))
